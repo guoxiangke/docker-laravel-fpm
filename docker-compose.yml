@@ -3,7 +3,7 @@ services:
   # https://www.digitalocean.com/community/tutorials/how-to-set-up-laravel-nginx-and-mysql-with-docker-compose
   #PHP Service
   app:
-    image: laravel-fpm
+    image: ${DOCKER_BUILD_IMAGE}
     links:
       - db:mysql
       - redis
@@ -25,6 +25,7 @@ services:
       - app_code:/var/www/html/
       - ./storage/app:/var/www/html/storage/app:rw
       - .env.production:/var/www/html/.env
+      - ./docker/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
       # for dev fast
       - ./composer:/var/www/html/composer
       - ./app:/var/www/html/app
@@ -47,7 +48,7 @@ services:
       LETSENCRYPT_HOST: your.domain.com
       LETSENCRYPT_EMAIL: dale.tel@139.com
     ports:
-      - "8080:80"
+      - "8081:80"
     networks:
       - overlay
       - backend
@@ -58,7 +59,6 @@ services:
   db:
     image: mysql:latest
     command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci', '--default-authentication-plugin=mysql_native_password']
-    # command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci --init-connect='SET NAMES UTF8;' --innodb-flush-log-at-trx-commit=0
     restart: unless-stopped
     volumes:
       - db_data:/var/lib/mysql
@@ -76,7 +76,7 @@ services:
       - backend
 
   scheduler:
-    image: laravel-fpm
+    image: ${DOCKER_BUILD_IMAGE}
     restart: always
     depends_on:
       - app
@@ -97,7 +97,7 @@ services:
       QUEUE_DRIVER: redis
       REDIS_HOST: redis
   queue:
-    image: laravel-fpm
+    image: ${DOCKER_BUILD_IMAGE}
     restart: always
     depends_on:
       - app
